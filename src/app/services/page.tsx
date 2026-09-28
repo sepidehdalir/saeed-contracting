@@ -1,5 +1,34 @@
-import { PageIntro, Cta } from '@/components/shared';
-import { ServiceGrid } from '@/components/service-grid';
-import { metadata as makeMetadata } from '@/lib/site';
-export const metadata=makeMetadata('Contracting Services in North Vancouver','Explore general repairs, home maintenance, furniture assembly, TV mounting, painting, deck and fence repairs, yard work and property maintenance.','/services');
-export default function Services(){return <><PageIntro eyebrow="REPAIRS · MAINTENANCE · INSTALLATIONS" title="Good work starts here." description="Practical services for your home, strata or business. Browse our current services, then tell us what your property needs." crumbs={[{name:'Services',href:'/services'}]}/><section className="section"><div className="container"><ServiceGrid/><div className="prose" style={{marginTop:50,maxWidth:760}}><h2>Not sure where your job fits?</h2><p>A project can involve more than one service. Send your full list and we can discuss a coordinated scope. Work is confirmed according to site conditions, access, materials and availability.</p></div></div></section><Cta/></>;}
+import { PageIntro, Cta } from "@/components/shared";
+import { ServiceGrid } from "@/components/service-grid";
+import { metadata as makeMetadata } from "@/lib/site";
+export const metadata = makeMetadata(
+  "Contracting Services in North Vancouver",
+  "Explore general repairs, home maintenance, furniture assembly, TV mounting, painting, deck and fence repairs, yard work and property maintenance.",
+  "/services",
+);
+export default function Services() {
+  return (
+    <>
+      <PageIntro
+        eyebrow="REPAIRS · MAINTENANCE · INSTALLATIONS"
+        title="Good work starts here."
+        description="Practical services for your home, strata or business. Browse our current services, then tell us what your property needs."
+        crumbs={[{ name: "Services", href: "/services" }]}
+      />
+      <section className="section">
+        <div className="container">
+          <ServiceGrid />
+          <div className="prose" style={{ marginTop: 50, maxWidth: 760 }}>
+            <h2>Not sure where your job fits?</h2>
+            <p>
+              A project can involve more than one service. Send your full list
+              and we can discuss a coordinated scope. Work is confirmed
+              according to site conditions, access, materials and availability.
+            </p>
+          </div>
+        </div>
+      </section>
+      <Cta />
+    </>
+  );
+}

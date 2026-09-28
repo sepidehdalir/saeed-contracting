@@ -1,10 +1,128 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { services, getService } from '@/lib/services';
-import { metadata as makeMetadata, site } from '@/lib/site';
-import { PageIntro, Cta, Faq, JsonLd } from '@/components/shared';
-import { Arrow } from '@/components/brand';
-export const dynamicParams=false;
-export function generateStaticParams(){return services.map(({slug})=>({slug}));}
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const s=getService((await params).slug);if(!s)notFound();return makeMetadata(`${s.name} in North Vancouver`,s.intro,`/services/${s.slug}`);}
-export default async function ServicePage({params}:{params:Promise<{slug:string}>}){const s=getService((await params).slug);if(!s)notFound();return <><PageIntro eyebrow="NORTH VANCOUVER & GREATER VANCOUVER" title={s.name} description={s.intro} crumbs={[{name:'Services',href:'/services'},{name:s.name,href:`/services/${s.slug}`}]}/><section className="section"><div className="container content-grid"><div className="prose"><h2>{s.heading}</h2>{s.body.map(p=><p key={p}>{p}</p>)}<h3>What we can help with</h3><ul className="check-list">{s.includes.map(i=><li key={i}>{i}</li>)}</ul><h3>Planning the work locally</h3><p>{s.local}</p><p>Service is also available by arrangement in West Vancouver, Vancouver, Burnaby, Coquitlam and Greater Vancouver. <Link className="text-link" href="/service-areas">View service areas <Arrow/></Link></p><div className="related"><h3>Related services</h3><div className="related-links">{s.related.map(slug=>{const r=getService(slug);return r?<Link key={slug} className="text-link" href={`/services/${slug}`}>{r.name}<Arrow diagonal/></Link>:null;})}</div></div></div><aside className="panel"><p className="eyebrow">LET’S PLAN YOUR PROJECT</p><h2>A few details help.</h2><p>{s.prepare}</p><p>We confirm the scope and price before scheduling. If a visit is needed to assess the work, we will discuss that first.</p><Link href={`/request-a-quote?service=${s.slug}`} className="button button-dark">Request a quote <Arrow diagonal/></Link><p style={{marginTop:22,marginBottom:0}}>Prefer to talk? <a href={`tel:${site.tel}`}>{site.phone}</a></p></aside></div></section><section className="section area-section"><div className="container faq-layout"><div><p className="eyebrow">PROJECT QUESTIONS</p><h2>Worth knowing.</h2></div><Faq items={s.faqs}/></div></section><Cta/><JsonLd data={{'@context':'https://schema.org','@type':'Service','@id':`${site.url}/services/${s.slug}#service`,name:s.name,serviceType:s.name,description:s.intro,url:`${site.url}/services/${s.slug}`,provider:{'@id':`${site.url}/#business`},areaServed:site.areas.map(name=>({'@type':'City',name}))}}/></>;}
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { services, getService } from "@/lib/services";
+import { metadata as makeMetadata, site } from "@/lib/site";
+import { PageIntro, Cta, Faq, JsonLd } from "@/components/shared";
+import { Arrow } from "@/components/brand";
+export const dynamicParams = false;
+export function generateStaticParams() {
+  return services.map(({ slug }) => ({ slug }));
+}
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const s = getService((await params).slug);
+  if (!s) notFound();
+  return makeMetadata(
+    `${s.name} in North Vancouver`,
+    s.intro,
+    `/services/${s.slug}`,
+  );
+}
+export default async function ServicePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const s = getService((await params).slug);
+  if (!s) notFound();
+  return (
+    <>
+      <PageIntro
+        eyebrow="NORTH VANCOUVER & GREATER VANCOUVER"
+        title={s.name}
+        description={s.intro}
+        crumbs={[
+          { name: "Services", href: "/services" },
+          { name: s.name, href: `/services/${s.slug}` },
+        ]}
+      />
+      <section className="section">
+        <div className="container content-grid">
+          <div className="prose">
+            <h2>{s.heading}</h2>
+            {s.body.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+            <h3>What we can help with</h3>
+            <ul className="check-list">
+              {s.includes.map((i) => (
+                <li key={i}>{i}</li>
+              ))}
+            </ul>
+            <h3>Planning the work locally</h3>
+            <p>{s.local}</p>
+            <p>
+              Service is also available by arrangement in West Vancouver,
+              Vancouver, Burnaby, Coquitlam and Greater Vancouver.{" "}
+              <Link className="text-link" href="/service-areas">
+                View service areas <Arrow />
+              </Link>
+            </p>
+            <div className="related">
+              <h3>Related services</h3>
+              <div className="related-links">
+                {s.related.map((slug) => {
+                  const r = getService(slug);
+                  return r ? (
+                    <Link
+                      key={slug}
+                      className="text-link"
+                      href={`/services/${slug}`}
+                    >
+                      {r.name}
+                      <Arrow diagonal />
+                    </Link>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          </div>
+          <aside className="panel">
+            <p className="eyebrow">LET’S PLAN YOUR PROJECT</p>
+            <h2>A few details help.</h2>
+            <p>{s.prepare}</p>
+            <p>
+              We confirm the scope and price before scheduling. If a visit is
+              needed to assess the work, we will discuss that first.
+            </p>
+            <Link
+              href={`/request-a-quote?service=${s.slug}`}
+              className="button button-dark"
+            >
+              Request a quote <Arrow diagonal />
+            </Link>
+            <p style={{ marginTop: 22, marginBottom: 0 }}>
+              Prefer to talk? <a href={`tel:${site.tel}`}>{site.phone}</a>
+            </p>
+          </aside>
+        </div>
+      </section>
+      <section className="section area-section">
+        <div className="container faq-layout">
+          <div>
+            <p className="eyebrow">PROJECT QUESTIONS</p>
+            <h2>Worth knowing.</h2>
+          </div>
+          <Faq items={s.faqs} />
+        </div>
+      </section>
+      <Cta />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "@id": `${site.url}/services/${s.slug}#service`,
+          name: s.name,
+          serviceType: s.name,
+          description: s.intro,
+          url: `${site.url}/services/${s.slug}`,
+          provider: { "@id": `${site.url}/#business` },
+          areaServed: site.areas.map((name) => ({ "@type": "City", name })),
+        }}
+      />
+    </>
+  );
+}

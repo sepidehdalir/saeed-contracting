@@ -1,6 +1,67 @@
-import Link from 'next/link';
-import { PageIntro, Cta } from '@/components/shared';
-import { metadata as makeMetadata } from '@/lib/site';
-import { Arrow } from '@/components/brand';
-export const metadata=makeMetadata('About Our North Vancouver Contracting Business','Meet Saeed Contracting: practical repairs, maintenance and installations with clear communication for North Vancouver homes, strata and businesses.','/about');
-export default function About(){return <><PageIntro eyebrow="SAEED CONTRACTING" title="Professional service. Quality work." description="A local point of contact for the repairs, maintenance and installations that keep your property working well." crumbs={[{name:'About',href:'/about'}]}/><section className="section"><div className="container split-section"><div className="prose"><h2>Care for the place<br/><em>you call your own.</em></h2><p>Saeed Contracting serves North Vancouver and Greater Vancouver with general contracting and property services for residential, strata and commercial spaces.</p><p>Our approach is practical: understand what needs attention, agree on a clear scope and take care with the details. We welcome smaller repair lists as well as projects that bring several services together.</p><p>A good working relationship depends on clear communication. That means discussing materials and access, confirming the price and schedule, and raising changes before proceeding.</p><Link href="/services" className="text-link">Explore our current services <Arrow/></Link></div><aside className="panel"><p className="eyebrow">WHAT GUIDES THE WORK</p><h2>Simple expectations.<br/>Taken seriously.</h2><ul className="check-list"><li>A clearly agreed scope</li><li>Practical options for your property</li><li>Attention to fit and finish</li><li>Respect for occupied spaces</li><li>A tidy work area at completion</li></ul></aside></div></section><Cta/></>;}
+import Link from "next/link";
+import { PageIntro, Cta } from "@/components/shared";
+import { metadata as makeMetadata } from "@/lib/site";
+import { Arrow } from "@/components/brand";
+export const metadata = makeMetadata(
+  "About Our North Vancouver Contracting Business",
+  "Meet Saeed Contracting: practical repairs, maintenance and installations with clear communication for North Vancouver homes, strata and businesses.",
+  "/about",
+);
+export default function About() {
+  return (
+    <>
+      <PageIntro
+        eyebrow="SAEED CONTRACTING"
+        title="Professional service. Quality work."
+        description="A local point of contact for the repairs, maintenance and installations that keep your property working well."
+        crumbs={[{ name: "About", href: "/about" }]}
+      />
+      <section className="section">
+        <div className="container split-section">
+          <div className="prose">
+            <h2>
+              Care for the place
+              <br />
+              <em>you call your own.</em>
+            </h2>
+            <p>
+              Saeed Contracting serves North Vancouver and Greater Vancouver
+              with general contracting and property services for residential,
+              strata and commercial spaces.
+            </p>
+            <p>
+              Our approach is practical: understand what needs attention, agree
+              on a clear scope and take care with the details. We welcome
+              smaller repair lists as well as projects that bring several
+              services together.
+            </p>
+            <p>
+              A good working relationship depends on clear communication. That
+              means discussing materials and access, confirming the price and
+              schedule, and raising changes before proceeding.
+            </p>
+            <Link href="/services" className="text-link">
+              Explore our current services <Arrow />
+            </Link>
+          </div>
+          <aside className="panel">
+            <p className="eyebrow">WHAT GUIDES THE WORK</p>
+            <h2>
+              Simple expectations.
+              <br />
+              Taken seriously.
+            </h2>
+            <ul className="check-list">
+              <li>A clearly agreed scope</li>
+              <li>Practical options for your property</li>
+              <li>Attention to fit and finish</li>
+              <li>Respect for occupied spaces</li>
+              <li>A tidy work area at completion</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+      <Cta />
+    </>
+  );
+}
