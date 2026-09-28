@@ -1,0 +1,10 @@
+import type { Metadata } from 'next';
+export const site = { name: 'Saeed Contracting', url: 'https://saeedcontracting.ca', phone: '604-627-0166', tel: '+16046270166', email: 'info@saeedcontracting.ca', areas: ['North Vancouver', 'West Vancouver', 'Vancouver', 'Burnaby', 'Coquitlam', 'Greater Vancouver'] };
+export function metadata(title:string,description:string,path:string):Metadata{return {title,description,alternates:{canonical:path},openGraph:{title:`${title} | ${site.name}`,description,url:path,type:'website',locale:'en_CA',siteName:site.name,images:[{url:'/opengraph-image',width:1200,height:630,alt:'Saeed Contracting — North Vancouver & Greater Vancouver'}]},twitter:{card:'summary_large_image',title,description,images:['/opengraph-image']}};}
+export const homeFaqs = [
+['What kinds of projects can I request?', 'We handle general repairs, home maintenance, furniture assembly, TV mounting, painting, deck and fence repairs, yard work and property maintenance. Send a description and we will confirm whether your project fits our current scope.'],
+['Do you work with strata and commercial properties?', 'Yes. We welcome enquiries from homeowners, strata councils, property managers and businesses. Let us know about access arrangements, building rules and any approval requirements when you contact us.'],
+['How do I get a quote?', 'Tell us what needs doing, where the property is and your preferred timing. Photos can help us understand the work. We will review the details and discuss whether a site visit is needed before confirming the scope and price.'],
+['Which areas do you serve?', 'Our primary service area is North Vancouver. We also consider projects in West Vancouver, Vancouver, Burnaby, Coquitlam and across Greater Vancouver. Scheduling and travel are confirmed for each project.'],
+['Can I combine several small jobs?', 'Yes. Include your full list when requesting a quote so we can plan materials, access and time together. The agreed scope will identify which items are included.'],
+] as const;
