@@ -4,7 +4,7 @@ A production Next.js website for a North Vancouver contracting and property-serv
 
 **[Production deployment](https://saeed-contracting.vercel.app)** · **[Canonical domain](https://saeedcontracting.ca)** · **[Launch & operations guide](docs/OPERATIONS.md)**
 
-> Launch status: the website is deployed on Vercel. Custom-domain activation requires the DNS changes in the operations guide. Quote requests currently use a clearly labelled email-draft flow; direct Resend sending is implemented but awaits account capacity, domain verification and security credentials.
+> Launch status: the website is deployed on Vercel. Custom-domain activation requires the DNS changes in the operations guide. Quote requests currently use a clearly labelled email-draft flow; direct Resend sending is implemented but awaits account capacity, domain verification and a restricted sending key. Vercel quote rate limiting is live and verified.
 
 ![Saeed Contracting desktop website](docs/home-desktop.png)
 
@@ -18,23 +18,23 @@ A production Next.js website for a North Vancouver contracting and property-serv
 
 ## Pages
 
-| Page | URL |
-| --- | --- |
-| Home | `/` |
-| Services | `/services` |
-| General Repairs | `/services/general-repairs` |
-| Home Maintenance | `/services/home-maintenance` |
-| Furniture Assembly | `/services/furniture-assembly` |
+| Page                        | URL                                   |
+| --------------------------- | ------------------------------------- |
+| Home                        | `/`                                   |
+| Services                    | `/services`                           |
+| General Repairs             | `/services/general-repairs`           |
+| Home Maintenance            | `/services/home-maintenance`          |
+| Furniture Assembly          | `/services/furniture-assembly`        |
 | TV Mounting & Installations | `/services/tv-mounting-installations` |
-| Painting & Finishing | `/services/painting-finishing` |
-| Deck & Fence Repairs | `/services/deck-fence-repairs` |
-| Yard & Exterior Work | `/services/yard-exterior-work` |
-| Property Maintenance | `/services/property-maintenance` |
-| About | `/about` |
-| Service Areas | `/service-areas` |
-| Contact | `/contact` |
-| Request a Quote | `/request-a-quote` |
-| Privacy | `/privacy` |
+| Painting & Finishing        | `/services/painting-finishing`        |
+| Deck & Fence Repairs        | `/services/deck-fence-repairs`        |
+| Yard & Exterior Work        | `/services/yard-exterior-work`        |
+| Property Maintenance        | `/services/property-maintenance`      |
+| About                       | `/about`                              |
+| Service Areas               | `/service-areas`                      |
+| Contact                     | `/contact`                            |
+| Request a Quote             | `/request-a-quote`                    |
+| Privacy                     | `/privacy`                            |
 
 A custom 404, `sitemap.xml`, `robots.txt`, SVG favicon, Apple touch icon and brand social card are also included.
 
@@ -67,7 +67,7 @@ All public service consumers use the published catalogue. Future regulated-servi
 
 At launch the form validates customer details, prepares an email and explicitly asks the visitor to send it. The server integration never reports success when unavailable. Call/email links and copyable request details offer alternatives.
 
-Direct submission is gated on verified Resend configuration and Cloudflare Turnstile. It validates all inputs server-side, bounds request size, verifies request origins and challenge hostname/action, uses a honeypot and timing checks, and sends only to the configured business inbox. Unit tests simulate provider success/failure without sending email. See [email setup](docs/OPERATIONS.md#enable-direct-submissions-later).
+Direct submission sends a business notification with customer Reply-To and a branded customer confirmation in a Resend batch. Stable idempotency keys protect retries, and customer/provider details stay out of logs. Input limits, validation, origin checks, honeypot and timing checks are combined with a verified Vercel rate limit (10 attempts per IP per 10 minutes). Turnstile remains available as an additional check. Sender activation awaits Resend domain capacity and verification; see [email setup](docs/OPERATIONS.md#finish-sender-activation).
 
 ## Accessibility and performance
 
@@ -96,9 +96,10 @@ npm test
 npm run build
 npx playwright install chromium
 npm run test:e2e
+npm run test:delivery
 ```
 
-The browser suite starts the production server automatically. It checks every public page, local links, metadata, structured-data parsing, keyboard/mobile navigation, form drafting, safe API failures, unknown routes and the unpublished-service boundary. `TEST_BASE_URL` may point to a public deployment for read-only QA; form tests only prepare drafts and never send emails.
+The browser suite starts the production server automatically. It checks every public page, local links, metadata, structured-data parsing, keyboard/mobile navigation, form drafting, safe API failures, unknown routes and the unpublished-service boundary. `TEST_BASE_URL` may point to a public deployment for read-only QA; the main form test prepares drafts. The separate local direct-delivery suite intercepts all submissions and never sends email.
 
 ## Deploy and maintain
 

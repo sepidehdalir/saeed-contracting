@@ -28,3 +28,9 @@ Lighthouse 13.5.0, mobile simulation against `https://saeed-contracting.vercel.a
 | SEO            |   100 |
 
 FCP 1.0 seconds; LCP 2.3 seconds; total blocking time 140 ms; cumulative layout shift 0. This is one lab run, not field Core Web Vitals. Lighthouse reported a browser-cache clearing timeout, so cache state may have affected the result. The final homepage title refinement does not change page layout or assets.
+
+## Quote delivery follow-up
+
+The existing 18 browser checks and three new direct-mode browser checks pass. Seven Node test results cover validation, successful two-email submission, Reply-To, branded confirmation, stable retry idempotency, provider failures, challenge rejection and firewall-mode gating. Direct-mode browser tests use dummy credentials and intercept submissions; no live message was sent. A production Vercel firewall probe verified ten invalid requests return 400 and the eleventh returns 429, while the home page remains 200.
+
+Direct delivery still awaits Resend capacity (3/3 domain slots), sending-domain DNS verification and a restricted API key. Turnstile is optional because verified Vercel rate limiting is now available. The correct GoDaddy account is still needed to change parking DNS. The iCloud MX and SPF records remain unchanged.
