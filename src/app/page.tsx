@@ -5,7 +5,7 @@ import { Cta, Faq } from "@/components/shared";
 import { ServiceGrid } from "@/components/service-grid";
 import { metadata as makeMetadata, site, homeFaqs } from "@/lib/site";
 export const metadata = makeMetadata(
-  "North Vancouver Contracting & Property Services",
+  "Saeed Contracting | North Vancouver Contractor",
   "Saeed Contracting provides repairs, home maintenance, painting, TV mounting and property services in North Vancouver and Greater Vancouver. Request a quote.",
   "/",
 );

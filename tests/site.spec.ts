@@ -85,16 +85,24 @@ for (const path of pages)
   });
 test("seven responsive sizes, mobile menu, FAQ and screenshots", async ({
   page,
+  browser,
 }) => {
   for (const width of [375, 390, 430, 768, 1024, 1440, 1920]) {
-    await page.setViewportSize({ width, height: 1000 });
-    await page.goto("/");
+    const context = await browser.newContext({
+      viewport: { width, height: 1000 },
+      baseURL: process.env.TEST_BASE_URL || "http://localhost:3000",
+    });
+    const responsivePage = await context.newPage();
+    await responsivePage.goto("/");
     expect(
-      await page.evaluate(
+      await responsivePage.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
       ),
     ).toBe(true);
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(
+      responsivePage.getByRole("heading", { level: 1 }),
+    ).toBeVisible();
+    await context.close();
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
@@ -119,8 +127,14 @@ test("seven responsive sizes, mobile menu, FAQ and screenshots", async ({
   await page.locator("summary").first().click();
   await expect(page.locator("details").first()).toHaveAttribute("open", "");
   await page.locator("summary").first().click();
+  await page
+    .locator(".hero-visual img")
+    .evaluate((image) => (image as HTMLImageElement).decode());
   await page.screenshot({ path: "docs/home-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1000 });
+  await page
+    .locator(".hero-visual img")
+    .evaluate((image) => (image as HTMLImageElement).decode());
   await page.screenshot({ path: "docs/home-desktop.png", fullPage: true });
 });
 test("quote form validates, preselects service and prepares an unsent email", async ({
