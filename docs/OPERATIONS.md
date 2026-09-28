@@ -6,27 +6,25 @@
 - Production branch: `main`
 - Vercel project: `saeed-contracting`, in `celinadalir-stacks-projects`
 - Canonical: https://saeedcontracting.ca
-- `www` is configured in Vercel to redirect with HTTP 301 to the apex. The application also preserves the path/query in its 301 rule. Public HTTPS/redirect verification awaits the DNS changes below.
+- `www` is configured in Vercel to redirect with HTTP 301 to the apex. The application also preserves the path/query in its 301 rule. HTTPS and the 301 redirect have been verified directly against the configured Vercel edge; older resolver caches may briefly retain the parking result.
 - Vercel is linked to the GitHub repository. Pushes to `main` trigger production deployments.
 - Pull requests receive Vercel previews. Preview builds emit `X-Robots-Tag: noindex, nofollow`.
 
-## DNS changes required at GoDaddy
+## Production DNS at GoDaddy
 
-Vercel's domain verification returned these exact recommended records on 28 September 2026:
+The website DNS changes were applied through the owner's signed-in GoDaddy account on 28 September 2026. Both authoritative GoDaddy nameservers now return Vercel's records, and Vercel reports both hostnames configured correctly.
 
-| Type  | Name | Value                               |
-| ----- | ---- | ----------------------------------- |
-| A     | @    | 216.198.79.1                        |
-| A     | @    | 64.29.17.1                          |
-| CNAME | www  | a1971357b6359ded.vercel-dns-017.com |
+| Type  | Name | Value                               | TTL         |
+| ----- | ---- | ----------------------------------- | ----------- |
+| A     | @    | 216.198.79.1                        | 600 seconds |
+| A     | @    | 64.29.17.1                          | 600 seconds |
+| CNAME | www  | a1971357b6359ded.vercel-dns-017.com | 1 hour      |
 
-TTL: keep GoDaddy’s default; Vercel specifies no special TTL for these records.
+The Parked A record was replaced and the second Vercel A address added. The www CNAME was changed from the apex to Vercel's recommended target. Registrar and nameservers remain GoDaddy (`ns39.domaincontrol.com`, `ns40.domaincontrol.com`). No nameserver transfer is needed.
 
-The accessible GoDaddy session returned “No domains match saeedcontracting.ca.” Sign into the account that owns this domain to apply these changes.
+Mail DNS was preserved and rechecked: both priority-10 iCloud MX records, the single `v=spf1 include:icloud.com ~all` TXT, Apple verification TXT, and `sig1._domainkey` CNAME to `sig1.dkim.saeedcontracting.ca.at.icloudmailadmin.com`. No email record was edited.
 
-Replace the existing parking A records (`3.33.130.190`, `15.197.148.33`) with the two recommended A records. Replace the existing `www` CNAME to the apex with the Vercel CNAME above. Keep existing nameservers, iCloud MX, SPF, DKIM and domain-verification records unchanged. Do not transfer the domain or replace nameservers.
-
-Both names have already been added to the Vercel project. After DNS propagates, use `vercel domains verify saeedcontracting.ca` and `vercel domains verify www.saeedcontracting.ca`. Verify HTTPS and the 301 redirect in a browser. Vercel provisions the certificates when domain configuration is valid.
+The auto-renewing certificate `cert_WVWfZJoAlloY20FwrXPBhkPR` covers both names. A certificate-validated HTTPS request to the configured Vercel IP returned HTTP 200, and `https://www.saeedcontracting.ca/services?check=domain` returned HTTP 301 to `https://saeedcontracting.ca/services?check=domain`. Cloudflare and Google public DNS returned the new records. Local cached resolution still briefly returned parking at the time of verification; no certificate validation was disabled. No additional website DNS action is needed.
 
 ## Quote requests: current production state
 

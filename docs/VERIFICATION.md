@@ -34,3 +34,7 @@ FCP 1.0 seconds; LCP 2.3 seconds; total blocking time 140 ms; cumulative layout 
 The existing 18 browser checks and three new direct-mode browser checks pass. Seven Node test results cover validation, successful two-email submission, Reply-To, branded confirmation, stable retry idempotency, provider failures, challenge rejection and firewall-mode gating. Direct-mode browser tests use dummy credentials and intercept submissions; no live message was sent. A production Vercel firewall probe verified ten invalid requests return 400 and the eleventh returns 429, while the home page remains 200.
 
 Direct delivery still awaits Resend capacity (3/3 domain slots), sending-domain DNS verification and a restricted API key. Turnstile is optional because verified Vercel rate limiting is now available. The correct GoDaddy account is still needed to change parking DNS. The iCloud MX and SPF records remain unchanged.
+
+## Custom domain connected
+
+On 28 September 2026 the owner supplied the correct signed-in GoDaddy account. The two apex A records and www CNAME were applied and verified in GoDaddy, authoritative DNS and public resolvers. Vercel marks both domains correctly configured. An auto-renewing certificate covers both names. Certificate-validated HTTPS against the new Vercel addresses returned 200 for the website and 301 for www, preserving the requested path and query. Existing local DNS caches still showed the old parking result during propagation. iCloud MX, SPF, Apple verification and DKIM were preserved. The Resend domain-capacity blocker is unchanged.

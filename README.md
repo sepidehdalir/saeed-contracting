@@ -4,7 +4,7 @@ A production Next.js website for a North Vancouver contracting and property-serv
 
 **[Production deployment](https://saeed-contracting.vercel.app)** · **[Canonical domain](https://saeedcontracting.ca)** · **[Launch & operations guide](docs/OPERATIONS.md)**
 
-> Launch status: the website is deployed on Vercel. Custom-domain activation requires the DNS changes in the operations guide. Quote requests currently use a clearly labelled email-draft flow; direct Resend sending is implemented but awaits account capacity, domain verification and a restricted sending key. Vercel quote rate limiting is live and verified.
+> Launch status: the website is deployed on Vercel. The custom domain is configured and its Vercel HTTPS/301 behavior is verified; old DNS caches may briefly retain the parking page. Quote requests currently use a clearly labelled email-draft flow; direct Resend sending is implemented but awaits account capacity, domain verification and a restricted sending key. Vercel quote rate limiting is live and verified.
 
 ![Saeed Contracting desktop website](docs/home-desktop.png)
 
