@@ -1,3 +1,4 @@
+import { quoteDeliveryConfig } from "@/lib/quote-delivery";
 import { Suspense } from "react";
 import { PageIntro } from "@/components/shared";
 import { QuoteForm } from "@/components/quote-form";
@@ -16,18 +17,13 @@ async function Form({
   const requested = (await searchParams).service;
   const selected = services.some((s) => s.slug === requested) ? requested! : "";
   const key = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
-  const direct = !!(
-    process.env.RESEND_API_KEY &&
-    process.env.QUOTE_FROM_EMAIL &&
-    process.env.TURNSTILE_SECRET_KEY &&
-    key
-  );
+  const { direct, turnstile } = quoteDeliveryConfig();
   return (
     <QuoteForm
       options={services.map(({ slug, name }) => ({ slug, name }))}
       initialService={selected}
       direct={direct}
-      siteKey={key}
+      siteKey={turnstile ? key : ""}
     />
   );
 }

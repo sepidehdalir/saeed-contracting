@@ -1,5 +1,6 @@
+import { quoteDeliveryConfig, quoteEmails } from "@/lib/quote-delivery";
 import { services } from "@/lib/services";
-import { validateQuote, quoteText } from "@/lib/quote";
+import { validateQuote } from "@/lib/quote";
 import { site } from "@/lib/site";
 export const runtime = "nodejs";
 const reply = (error: string, status: number) =>
@@ -60,7 +61,8 @@ export async function POST(request: Request) {
   const key = process.env.RESEND_API_KEY;
   const from = process.env.QUOTE_FROM_EMAIL;
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!key || !from || !secret || !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
+  const config = quoteDeliveryConfig();
+  if (!key || !from || !config.direct)
     return reply(
       "Online sending is unavailable. Please email info@saeedcontracting.ca or call 604-627-0166.",
       503,
@@ -74,66 +76,100 @@ export async function POST(request: Request) {
       "Please take a moment to check the form, then try again.",
       400,
     );
-  if (typeof body.token !== "string" || body.token.length > 2048 || !body.token)
+  if (
+    config.turnstile &&
+    (typeof body.token !== "string" || body.token.length > 2048 || !body.token)
+  )
     return reply("Please complete the security check.", 400);
+  if (
+    typeof body.submissionId !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      body.submissionId,
+    ) ||
+    typeof body.submittedAt !== "number" ||
+    !Number.isSafeInteger(body.submittedAt) ||
+    body.submittedAt > Date.now() + 60000 ||
+    Date.now() - body.submittedAt > 23 * 3600000
+  )
+    return reply("Please refresh the page and try again.", 400);
+  const submission = await digest(body.submissionId);
   try {
-    const challenge = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        body: new URLSearchParams({ secret, response: body.token }),
-        signal: AbortSignal.timeout(8000),
-      },
-    );
-    if (!challenge.ok)
-      return reply(
-        "Security verification is unavailable. Please email or call us.",
-        503,
+    if (config.turnstile) {
+      const challenge = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        {
+          method: "POST",
+          body: new URLSearchParams({
+            secret: secret!,
+            response: body.token as string,
+            idempotency_key: body.submissionId,
+          }),
+          signal: AbortSignal.timeout(8000),
+        },
       );
-    const verified = await challenge.json();
-    const hosts = new Set([...allowed].map((u) => new URL(u).hostname));
-    if (
-      !verified.success ||
-      verified.action !== "quote" ||
-      !hosts.has(verified.hostname)
-    )
-      return reply("Security check expired or failed. Please try again.", 400);
+      if (!challenge.ok)
+        return reply(
+          "Security verification is unavailable. Please email or call us.",
+          503,
+        );
+      const verified = await challenge.json();
+      const hosts = new Set([...allowed].map((u) => new URL(u).hostname));
+      if (
+        !verified.success ||
+        verified.action !== "quote" ||
+        !hosts.has(verified.hostname)
+      )
+        return reply(
+          "Security check expired or failed. Please try again.",
+          400,
+        );
+    }
     const q = checked.value;
     const service =
       services.find((s) => s.slug === q.service)?.name ||
       "Multiple services / not sure";
-    const result = await fetch("https://api.resend.com/emails", {
+    const result = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
-        "Idempotency-Key": `quote-${await digest(body.token)}`,
+        "Idempotency-Key": `quote-v2-${submission}`,
       },
-      body: JSON.stringify({
-        from,
-        to: [site.email],
-        reply_to: q.email,
-        subject: `Website quote request — ${service}`,
-        text: quoteText(q, service),
-      }),
+      body: JSON.stringify(quoteEmails(q, service, body.submittedAt, from)),
       signal: AbortSignal.timeout(10000),
     });
-    if (!result.ok)
+    if (!result.ok) {
+      console.error("quote_delivery_failed", {
+        submission,
+        status: result.status,
+      });
       return reply(
         "Your request could not be sent. Please email or call us directly.",
-        502,
+        result.status === 409 ? 409 : 502,
       );
+    }
     const sent = await result.json();
-    if (!sent.id)
+    if (
+      !Array.isArray(sent.data) ||
+      sent.data.length !== 2 ||
+      !sent.data.every(
+        (email: { id?: unknown }) => typeof email.id === "string" && email.id,
+      )
+    )
       return reply(
         "We could not confirm delivery. Please contact us directly.",
         502,
       );
+    console.info("quote_delivery_accepted", {
+      submission,
+      emailIds: sent.data.map((email: { id: string }) => email.id),
+    });
     return Response.json(
       { ok: true },
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch {
+    console.error("quote_delivery_unconfirmed", { submission });
     return reply(
       "We could not confirm that your request was sent. Please email or call us directly.",
       503,

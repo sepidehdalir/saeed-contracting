@@ -36,9 +36,10 @@ export default function Privacy() {
           <p>
             If direct submission is enabled, the form clearly offers “Send quote
             request”. Information is sent to our business inbox through our
-            email-delivery provider, Resend. An anti-spam check through
-            Cloudflare Turnstile is used in that mode. We do not store form
-            entries in a website database.
+            email-delivery provider, Resend, which also sends a confirmation to
+            the email address you provide. Vercel rate limiting protects the
+            form; an additional Cloudflare Turnstile check may appear when
+            configured. We do not store form entries in a website database.
           </p>
           <h2>Hosting and service providers</h2>
           <p>

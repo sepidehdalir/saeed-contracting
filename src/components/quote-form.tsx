@@ -34,6 +34,12 @@ export function QuoteForm({
   const challenge = useRef<HTMLDivElement>(null);
   const widget = useRef<string | undefined>(undefined);
   const started = useRef(0);
+  const sending = useRef(false);
+  const submission = useRef<{
+    signature: string;
+    submissionId: string;
+    submittedAt: number;
+  } | null>(null);
   const message = useRef<HTMLDivElement>(null);
   function renderChallenge() {
     if (challenge.current && window.turnstile && widget.current === undefined) {
@@ -54,6 +60,7 @@ export function QuoteForm({
   }
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (sending.current) return;
     setError("");
     setCopied(false);
     const form = e.currentTarget;
@@ -71,17 +78,27 @@ export function QuoteForm({
       options.find((s) => s.slug === quote.service)?.name ||
       "Please help me choose";
     const text = quoteText(quote, service);
-    setDraft(text);
     if (!direct) {
+      setDraft(text);
       requestAnimationFrame(() => message.current?.focus());
       return;
     }
-    if (!token) {
+    if (siteKey && !token) {
+      setDraft(text);
       setError(
         "Please complete the security check, or email your request using the link below.",
       );
       return;
     }
+    const signature = JSON.stringify(quote);
+    if (!submission.current || submission.current.signature !== signature)
+      submission.current = {
+        signature,
+        submissionId: crypto.randomUUID(),
+        submittedAt: Date.now(),
+      };
+    sending.current = true;
+    setDraft("");
     setBusy(true);
     try {
       const result = await fetch("/api/quote", {
@@ -89,17 +106,21 @@ export function QuoteForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...quote,
+          submissionId: submission.current.submissionId,
+          submittedAt: submission.current.submittedAt,
           website: data.website,
           token,
           startedAt: started.current,
         }),
         signal: AbortSignal.timeout(20000),
       });
-      const response = await result.json();
-      if (!result.ok) {
+      const response = await result.json().catch(() => null);
+      if (!result.ok || response?.ok !== true) {
+        setDraft(text);
         setError(
-          response.error ||
-            "Your request could not be sent. Please use the email option below.",
+          result.status === 429
+            ? "Too many attempts. Please wait a few minutes before retrying, or call or email us."
+            : "We could not confirm your request was sent. Please retry, or call or email us.",
         );
       } else {
         setSuccess(true);
@@ -107,10 +128,12 @@ export function QuoteForm({
         form.reset();
       }
     } catch {
+      setDraft(text);
       setError(
         "We could not confirm that your request was sent. Please call or email us. Your details are preserved below.",
       );
     } finally {
+      sending.current = false;
       setBusy(false);
       setToken("");
       if (window.turnstile && widget.current !== undefined)
@@ -121,11 +144,14 @@ export function QuoteForm({
   const emailLink = `mailto:info@saeedcontracting.ca?subject=${encodeURIComponent("Website quote request")}&body=${encodeURIComponent(draft)}`;
   if (success)
     return (
-      <div role="status" className="form-message">
-        <h2>Request sent.</h2>
+      <div role="status" className="form-message" ref={message} tabIndex={-1}>
+        <h2>
+          Thanks — your project request has been sent to Saeed Contracting.
+        </h2>
         <p style={{ marginTop: 16 }}>
-          Your quote request was accepted by our email service. We’ll review the
-          details and follow up. This is an enquiry, not a confirmed booking.
+          We’ll review your project and respond as soon as practical. A
+          confirmation email is on its way. This is an enquiry, not a confirmed
+          booking.
         </p>
         <p>
           If you need to check on your request, call{" "}
@@ -253,7 +279,7 @@ export function QuoteForm({
             <Link href="/privacy">privacy notice</Link>.
           </span>
         </label>
-        {direct ? (
+        {direct && siteKey ? (
           <>
             <Script
               src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
@@ -295,17 +321,24 @@ export function QuoteForm({
         ) : null}
         {draft ? (
           <div className="panel" aria-live="polite">
-            <h2>Your email is ready to send.</h2>
+            <h2>
+              {direct ? "Contact us directly" : "Your email is ready to send."}
+            </h2>
             <p>
-              No request has been sent from this page. Open your email app, add
-              any photos and press Send. If no app opens, copy the details and
-              email{" "}
+              {direct
+                ? "We could not confirm online delivery. Retry the form or contact us directly."
+                : "No request has been sent from this page."}{" "}
+              Open your email app, add any photos and press Send. If no app
+              opens, copy the details and email{" "}
               <a href="mailto:info@saeedcontracting.ca">
                 info@saeedcontracting.ca
               </a>
               .
             </p>
             <div className="flex flex-wrap gap-4">
+              <a href="tel:+16046270166" className="text-link">
+                Call 604-627-0166
+              </a>
               <a className="button button-dark" href={emailLink}>
                 Open email draft <Arrow diagonal />
               </a>

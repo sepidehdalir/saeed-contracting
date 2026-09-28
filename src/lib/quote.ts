@@ -45,7 +45,11 @@ export function validateQuote(
       return { error: `Please check the ${key} field.` };
     fields[key] = value;
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email))
+  if (
+    !/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/i.test(
+      fields.email,
+    )
+  )
     return { error: "Please enter a valid email address." };
   const digits = fields.phone.replace(/\D/g, "");
   if (
