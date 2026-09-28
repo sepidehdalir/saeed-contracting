@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "test:e2e": "playwright test",
-    "format": "prettier --write src tests *.ts *.json"
+    "format": "prettier --write src tests *.ts *.json",
+    "test:delivery": "playwright test --config=playwright.delivery.config.ts"
   },
   "dependencies": {
     "next": "16.3.6",
