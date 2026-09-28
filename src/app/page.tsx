@@ -61,7 +61,8 @@ export default function Home() {
               alt="Illustrative Pacific Northwest home with cedar cladding, precise trim and a forest outlook"
               fill
               sizes="(max-width:640px) 100vw, 55vw"
-              preload
+              loading="eager"
+              fetchPriority="high"
             />
             <figcaption className="visual-caption">
               Architectural illustration · West Coast inspiration

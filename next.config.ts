@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   trailingSlash: false,
-  images: { formats: ["image/avif", "image/webp"], remotePatterns: [] },
+  images: {
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [420, 640, 750, 828, 1080, 1200, 1536, 1920],
+    remotePatterns: [],
+  },
   async redirects() {
     return [
       {
