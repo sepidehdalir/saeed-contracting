@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Saeed Contracting
 
-## Getting Started
+A production Next.js website for a North Vancouver contracting and property-services business. The site turns a silver-and-navy business-card identity into an accessible, responsive customer experience with individual service pages and a transparent quote workflow.
 
-First, run the development server:
+**[Production deployment](https://saeed-contracting.vercel.app)** · **[Canonical domain](https://saeedcontracting.ca)** · **[Launch & operations guide](docs/OPERATIONS.md)**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+> Launch status: the website is deployed on Vercel. Custom-domain activation requires the DNS changes in the operations guide. Quote requests currently use a clearly labelled email-draft flow; direct Resend sending is implemented but awaits account capacity, domain verification and security credentials.
+
+![Saeed Contracting desktop website](docs/home-desktop.png)
+
+## Technology
+
+- Next.js 16.3.6 App Router, React 19, strict TypeScript and Tailwind CSS 4
+- Server Components and static generation for content; small client boundaries for navigation and the form
+- Vercel hosting with GitHub integration; `main` is the production source of truth
+- Playwright, axe-core, Node test runner and GitHub Actions
+- Self-hosted Manrope and Cormorant Garamond through `next/font`
+
+## Pages
+
+| Page | URL |
+| --- | --- |
+| Home | `/` |
+| Services | `/services` |
+| General Repairs | `/services/general-repairs` |
+| Home Maintenance | `/services/home-maintenance` |
+| Furniture Assembly | `/services/furniture-assembly` |
+| TV Mounting & Installations | `/services/tv-mounting-installations` |
+| Painting & Finishing | `/services/painting-finishing` |
+| Deck & Fence Repairs | `/services/deck-fence-repairs` |
+| Yard & Exterior Work | `/services/yard-exterior-work` |
+| Property Maintenance | `/services/property-maintenance` |
+| About | `/about` |
+| Service Areas | `/service-areas` |
+| Contact | `/contact` |
+| Request a Quote | `/request-a-quote` |
+| Privacy | `/privacy` |
+
+A custom 404, `sitemap.xml`, `robots.txt`, SVG favicon, Apple touch icon and brand social card are also included.
+
+## Architecture
+
+```text
+src/app/                 Pages, metadata routes and the quote endpoint
+src/components/          Shared layout, navigation, service grid and quote UI
+src/lib/services.ts      Typed public catalogue, content and publish controls
+src/lib/site.ts          Consistent business identity and metadata helpers
+src/lib/quote.ts         Shared validation and plain-text request formatting
+public/brand/            Web vector logo variants and icon mark
+brand/references/        Unmodified original business-card/logo references
+tests/                   Browser/accessibility and delivery-logic tests
+docs/                    Screenshots, asset provenance and operations
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+All public service consumers use the published catalogue. Future regulated-service configuration stays disabled; no electrical-services page, public claim, dropdown item or sitemap entry is emitted. See the operations guide before enabling a new category.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## SEO and local relevance
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Unique titles/descriptions, absolute canonical URLs, Open Graph and Twitter metadata
+- North Vancouver as the primary area; useful content for West Vancouver, Vancouver, Burnaby, Coquitlam and Greater Vancouver without duplicate location pages
+- JSON-LD for the business, website, services, breadcrumbs and visible FAQs
+- Consistent name, phone and email; no invented street address, credentials, reviews or operating history
+- Crawlable internal links, semantic headings, sitemap and robots; preview noindex headers
+- Search Console verification configuration and a documented future analytics integration
 
-## Learn More
+## Quote workflow
 
-To learn more about Next.js, take a look at the following resources:
+At launch the form validates customer details, prepares an email and explicitly asks the visitor to send it. The server integration never reports success when unavailable. Call/email links and copyable request details offer alternatives.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Direct submission is gated on verified Resend configuration and Cloudflare Turnstile. It validates all inputs server-side, bounds request size, verifies request origins and challenge hostname/action, uses a honeypot and timing checks, and sends only to the configured business inbox. Unit tests simulate provider success/failure without sending email. See [email setup](docs/OPERATIONS.md#enable-direct-submissions-later).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Accessibility and performance
 
-## Deploy on Vercel
+Keyboard-accessible navigation and FAQ disclosures, Escape-to-close mobile menu, visible focus, skip link, labelled forms, reduced-motion handling and readable contrast. Responsive tests cover 375, 390, 430, 768, 1024, 1440 and 1920 pixels.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The architecture illustration is served locally through Next Image with AVIF/WebP negotiation, responsive sizes and reserved layout space. Content is prerendered; fonts are self-hosted; no animation framework, tracker, map embed or external widget loads in email-draft mode. [Asset provenance](docs/ASSETS.md) documents the original references and generated illustration.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Automated checks are a foundation, not a claim of complete WCAG certification or guaranteed search rankings. Measured launch results are recorded in [verification](docs/VERIFICATION.md).
+
+## Local development
+
+Requires Node.js 22 and npm.
+
+```sh
+npm ci
+cp .env.example .env.local
+npm run dev
+```
+
+With empty email/security values, the form stays in email-draft mode. No API key is needed to develop the public site. Never commit real credentials.
+
+```sh
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+The browser suite starts the production server automatically. It checks every public page, local links, metadata, structured-data parsing, keyboard/mobile navigation, form drafting, safe API failures, unknown routes and the unpublished-service boundary. `TEST_BASE_URL` may point to a public deployment for read-only QA; form tests only prepare drafts and never send emails.
+
+## Deploy and maintain
+
+Push to `main` for automatic Vercel production deployment. GitHub Actions run lint, type checking, unit tests, build and browser checks. For an explicitly authorised CLI deployment, link the project and run `vercel --prod`.
+
+DNS, iCloud mail preservation, direct form activation, Search Console and future services are documented in [OPERATIONS.md](docs/OPERATIONS.md). Roll back through Vercel deployment history if needed.
+
+Brand assets and business content belong to Saeed Contracting. This repository is publicly viewable for maintenance and portfolio review; no licence to reuse the business identity is granted.

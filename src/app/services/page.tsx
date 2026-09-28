@@ -17,6 +17,7 @@ export default function Services() {
       />
       <section className="section">
         <div className="container">
+          <h2 className="sr-only">Current services</h2>
           <ServiceGrid />
           <div className="prose" style={{ marginTop: 50, maxWidth: 760 }}>
             <h2>Not sure where your job fits?</h2>

@@ -11,16 +11,16 @@ const pages = [
   "/request-a-quote",
   "/privacy",
 ];
-test("all public pages: metadata, navigation, schema, accessibility and responsive layout", async ({
-  page,
-  request,
-}) => {
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  const titles = new Set<string>();
-  const descriptions = new Set<string>();
-  const links = new Set<string>();
-  for (const path of pages) {
+const titles = new Set<string>();
+const descriptions = new Set<string>();
+for (const path of pages)
+  test(`page ${path}: SEO, accessibility and responsive layout`, async ({
+    page,
+    request,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(e.message));
+    const links = new Set<string>();
     const response = await page.goto(path);
     expect(response?.status(), path).toBe(200);
     await page.locator("h1").waitFor();
@@ -79,11 +79,10 @@ test("all public pages: metadata, navigation, schema, accessibility and responsi
       )) {
       if (href.startsWith("/")) links.add(href.split("?")[0]);
     }
-  }
-  for (const href of links)
-    expect((await request.get(href)).status(), href).toBe(200);
-  expect(errors).toEqual([]);
-});
+    for (const href of links)
+      expect((await request.get(href)).status(), href).toBe(200);
+    expect(errors).toEqual([]);
+  });
 test("seven responsive sizes, mobile menu, FAQ and screenshots", async ({
   page,
 }) => {
@@ -152,7 +151,9 @@ test("quote form validates, preselects service and prepares an unsent email", as
   await expect(page.getByText("Request sent.", { exact: true })).toHaveCount(0);
   await page.getByLabel("Phone number").fill("123");
   await page.getByRole("button", { name: "Prepare email request" }).click();
-  await expect(page.getByRole("alert")).toContainText("valid phone number");
+  await expect(page.locator(".form-error[role=alert]")).toContainText(
+    "valid phone number",
+  );
 });
 test("sitemap, robots, 404, disabled services and delivery fallback", async ({
   request,
