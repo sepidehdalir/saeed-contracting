@@ -1,8 +1,18 @@
 import Image from "next/image";
-export function Brand({ large = false }: { large?: boolean }) {
+export function Brand({
+  large = false,
+  light = false,
+}: {
+  large?: boolean;
+  light?: boolean;
+}) {
   return (
     <Image
-      src="/brand/logo-horizontal.svg"
+      src={
+        light
+          ? "/brand/logo-horizontal-light.svg"
+          : "/brand/logo-horizontal.svg"
+      }
       width={260}
       height={72}
       alt="Saeed Contracting"

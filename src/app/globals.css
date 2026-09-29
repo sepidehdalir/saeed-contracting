@@ -194,6 +194,11 @@ img {
   height: auto;
   display: block;
 }
+.site-header .brand {
+  opacity: 1;
+  filter: none;
+  mix-blend-mode: normal;
+}
 .brand-large {
   width: 245px;
 }

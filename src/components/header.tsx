@@ -28,7 +28,7 @@ export function Header() {
     >
       <div className="container header-inner">
         <Link href="/" aria-label="Saeed Contracting home" onClick={close}>
-          <Brand />
+          <Brand light />
         </Link>
         <nav aria-label="Main navigation" className="desktop-nav">
           {links.map(([label, href]) => (
