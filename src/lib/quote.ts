@@ -4,6 +4,7 @@ export type Quote = {
   email: string;
   city: string;
   service: string;
+  otherService?: string;
   description: string;
   timing: string;
   consent: boolean;
@@ -58,8 +59,21 @@ export function validateQuote(
     !/^\+?[0-9 ()\-.]+$/.test(fields.phone)
   )
     return { error: "Please enter a valid phone number with area code." };
-  if (![...serviceSlugs, "not-sure"].includes(fields.service))
+  if (![...serviceSlugs, "not-sure", "other"].includes(fields.service))
     return { error: "Please choose a current service." };
+  if (fields.service === "other") {
+    if (
+      typeof data.otherService !== "string" ||
+      !data.otherService.trim() ||
+      data.otherService.trim().length > 200 ||
+      /[\u0000-\u001f\u007f]/.test(data.otherService)
+    )
+      return {
+        error:
+          "Please briefly describe what you need help with (up to 200 characters).",
+      };
+    fields.otherService = data.otherService.trim();
+  }
   if (!timings.includes(fields.timing))
     return { error: "Please choose your preferred timing." };
   if (fields.description.length < 20)
@@ -69,5 +83,5 @@ export function validateQuote(
   return { value: { ...fields, consent: true } as Quote };
 }
 export function quoteText(q: Quote, serviceName: string) {
-  return `Quote request — Saeed Contracting\n\nName: ${q.name}\nPhone: ${q.phone}\nEmail: ${q.email}\nCity / neighbourhood: ${q.city}\nService: ${serviceName}\nTiming: ${q.timing}\n\nProject details:\n${q.description}\n\nI agree to be contacted about this project.`;
+  return `Quote request — Saeed Contracting\n\nName: ${q.name}\nPhone: ${q.phone}\nEmail: ${q.email}\nCity / neighbourhood: ${q.city}\nService: ${serviceName}${q.service === "other" ? `\nOther service: ${q.otherService}` : ""}\nTiming: ${q.timing}\n\nProject details:\n${q.description}\n\nI agree to be contacted about this project.`;
 }

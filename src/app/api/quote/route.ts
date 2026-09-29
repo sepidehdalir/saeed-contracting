@@ -127,7 +127,9 @@ export async function POST(request: Request) {
     const q = checked.value;
     const service =
       services.find((s) => s.slug === q.service)?.name ||
-      "Multiple services / not sure";
+      (q.service === "other"
+        ? "Other / Something else"
+        : "Multiple services / not sure");
     const result = await fetch("https://api.resend.com/emails/batch", {
       method: "POST",
       headers: {

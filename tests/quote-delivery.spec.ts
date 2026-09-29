@@ -105,3 +105,56 @@ test("invalid data makes no delivery request and mobile direct form fits", async
     ),
   ).toBe(true);
 });
+
+test("other service reveals required mobile field and submits its value with retry data", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const bodies: Record<string, unknown>[] = [];
+  await page.route("**/api/quote", async (route) => {
+    bodies.push(route.request().postDataJSON());
+    await route.fulfill({ status: 502, json: { error: "unavailable" } });
+  });
+  await fill(page);
+  const service = page.getByLabel("Service needed");
+  const other = page.getByLabel("What do you need help with?");
+  await expect(other).toHaveCount(0);
+  expect((await service.locator("option").allTextContents()).slice(-2)).toEqual(
+    ["Not sure / multiple services", "Other / Something else"],
+  );
+  await service.selectOption("other");
+  await expect(other).toBeVisible();
+  await expect(other).toHaveAttribute("required", "");
+  await expect(other).toHaveAttribute(
+    "placeholder",
+    "Briefly describe the service you need",
+  );
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  await expect(other).toBeFocused();
+  expect(bodies).toHaveLength(0);
+  await other.fill("Door adjustment");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  await expect(page.locator(".form-error")).toBeVisible();
+  expect(bodies[0].otherService).toBe("Door adjustment");
+  expect(
+    decodeURIComponent(
+      (await page
+        .getByRole("link", { name: "Open email draft" })
+        .getAttribute("href"))!,
+    ),
+  ).toContain("Other service: Door adjustment");
+  await expect(other).toHaveValue("Door adjustment");
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  await expect.poll(() => bodies.length).toBe(2);
+  expect(bodies[1].submissionId).toBe(bodies[0].submissionId);
+  await service.selectOption("general-repairs");
+  await expect(other).toHaveCount(0);
+  await page.getByRole("button", { name: "Send quote request" }).click();
+  await expect.poll(() => bodies.length).toBe(3);
+  expect(bodies[2]).not.toHaveProperty("otherService");
+});

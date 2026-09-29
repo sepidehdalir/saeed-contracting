@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { validateQuote } from "../src/lib/quote";
+import { validateQuote, quoteText } from "../src/lib/quote";
 import { POST } from "../src/app/api/quote/route";
 import { quoteDeliveryConfig } from "../src/lib/quote-delivery";
 const payload = {
@@ -44,6 +44,40 @@ test("validation rejects malformed data, recipient injection and unpublished ser
   assert.ok(validateQuote(payload, ["general-repairs"]).value);
 });
 
+test("other service is required, single-line, bounded and ignored for standard services", () => {
+  for (const otherService of [
+    undefined,
+    "",
+    "   ",
+    123,
+    "x".repeat(201),
+    "Repair\nSomething",
+    "Repair\r",
+    "Repair\u0000",
+  ])
+    assert.ok(
+      validateQuote({ ...payload, service: "other", otherService }, [
+        "general-repairs",
+      ]).error,
+    );
+  const q = validateQuote(
+    { ...payload, service: "other", otherService: "  Door adjustment  " },
+    ["general-repairs"],
+  ).value!;
+  assert.equal(q.otherService, "Door adjustment");
+  assert.ok(
+    quoteText(q, "Other / Something else").includes(
+      "Other service: Door adjustment",
+    ),
+  );
+  assert.equal(
+    validateQuote({ ...payload, otherService: "stale detail" }, [
+      "general-repairs",
+    ]).value?.otherService,
+    undefined,
+  );
+});
+
 test("protected two-email delivery, stable replay and safe provider failures", async (t) => {
   const originals = { ...process.env };
   const originalFetch = globalThis.fetch;
@@ -85,6 +119,45 @@ test("protected two-email delivery, stable replay and safe provider failures", a
         403,
       );
     });
+    await t.test(
+      "other service reaches business email but not fixed customer confirmation",
+      async () => {
+        let batches = 0;
+        globalThis.fetch = async (input, init) => {
+          if (String(input).includes("siteverify")) return verified();
+          batches++;
+          const emails = JSON.parse(String(init?.body));
+          assert.equal(
+            emails[0].subject,
+            "New Quote Request — Other / Something else — Website QA",
+          );
+          assert.ok(emails[0].text.includes("Other service: Door adjustment"));
+          assert.equal(emails[0].reply_to, payload.email);
+          assert.ok(!emails[1].html.includes("Door adjustment"));
+          return Response.json({
+            data: [{ id: "business" }, { id: "customer" }],
+          });
+        };
+        assert.equal(
+          (await POST(request({ ...payload, service: "other" }))).status,
+          400,
+        );
+        assert.equal(batches, 0);
+        assert.equal(
+          (
+            await POST(
+              request({
+                ...payload,
+                service: "other",
+                otherService: "Door adjustment",
+              }),
+            )
+          ).status,
+          200,
+        );
+        assert.equal(batches, 1);
+      },
+    );
     await t.test("failed challenge blocks sending", async () => {
       globalThis.fetch = async () => Response.json({ success: false });
       assert.equal((await POST(request())).status, 400);

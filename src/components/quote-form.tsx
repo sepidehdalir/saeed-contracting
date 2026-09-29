@@ -24,6 +24,7 @@ export function QuoteForm({
   direct: boolean;
   siteKey: string;
 }) {
+  const [selectedService, setSelectedService] = useState(initialService);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -76,7 +77,9 @@ export function QuoteForm({
     const quote = checked.value;
     const service =
       options.find((s) => s.slug === quote.service)?.name ||
-      "Please help me choose";
+      (quote.service === "other"
+        ? "Other / Something else"
+        : "Please help me choose");
     const text = quoteText(quote, service);
     if (!direct) {
       setDraft(text);
@@ -227,7 +230,8 @@ export function QuoteForm({
             id="service"
             name="service"
             required
-            defaultValue={initialService}
+            value={selectedService}
+            onChange={(event) => setSelectedService(event.target.value)}
           >
             <option value="" disabled>
               Select a service
@@ -238,7 +242,21 @@ export function QuoteForm({
               </option>
             ))}
             <option value="not-sure">Not sure / multiple services</option>
+            <option value="other">Other / Something else</option>
           </select>
+          {selectedService === "other" ? (
+            <div className="field" style={{ marginTop: 16 }}>
+              <label htmlFor="otherService">What do you need help with?</label>
+              <input
+                id="otherService"
+                name="otherService"
+                type="text"
+                required
+                maxLength={200}
+                placeholder="Briefly describe the service you need"
+              />
+            </div>
+          ) : null}
         </div>
         <div className="field">
           <label htmlFor="timing">Preferred timing</label>
