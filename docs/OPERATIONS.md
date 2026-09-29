@@ -26,6 +26,10 @@ Mail DNS was preserved and rechecked: both priority-10 iCloud MX records, the si
 
 The auto-renewing certificate `cert_WVWfZJoAlloY20FwrXPBhkPR` covers both names. A certificate-validated HTTPS request to the configured Vercel IP returned HTTP 200, and `https://www.saeedcontracting.ca/services?check=domain` returned HTTP 301 to `https://saeedcontracting.ca/services?check=domain`. Cloudflare and Google public DNS returned the new records. Local cached resolution still briefly returned parking at the time of verification; no certificate validation was disabled. No additional website DNS action is needed.
 
+## Quote recipient correction
+
+The owner reported that `info@saeedcontracting.ca` has no working inbox. Production business notifications now use `QUOTE_TO_EMAIL=celinadalir@gmail.com` as their sole recipient, with no CC/BCC. The customer email remains the notification Reply-To. Customer acknowledgements still go to the customer, with replies and email contact directed to the configured business recipient. The verified `notifications.saeedcontracting.ca` sender remains unchanged; Resend Receiving remains disabled. Earlier delivery records below are historical provider acceptance, not proof of a usable mailbox.
+
 ## Quote requests: current production state
 
 The production form sends directly through Resend. One live test through the actual form returned HTTP 200 and showed the on-page success message. Both the business notification and branded customer confirmation received Resend **delivered** events. Email drafting remains a graceful fallback when configuration is unavailable.
@@ -64,7 +68,7 @@ Resend delivery confirms acceptance by the recipient mail server, not whether so
 
 ### Delivery behavior and safeguards
 
-The API submits a two-message Resend batch: a plaintext notification to `info@saeedcontracting.ca` with the customer's Reply-To, followed by a branded HTML/plaintext acknowledgement to the validated customer address. The notification includes all form fields, UTC submission timestamp and canonical website source. The confirmation contains only fixed business content, preventing use as an arbitrary-content relay. It promises no exact response time. Photos remain email attachments sent separately; there is no upload endpoint.
+The API submits a two-message Resend batch: a plaintext notification to the single configured `QUOTE_TO_EMAIL` recipient with the customer's Reply-To, followed by a branded HTML/plaintext acknowledgement to the validated customer address. The notification includes all form fields, UTC submission timestamp and canonical website source. The confirmation contains only fixed business content, preventing use as an arbitrary-content relay. It promises no exact response time. Photos remain email attachments sent separately; there is no upload endpoint.
 
 A client-generated UUID and submission timestamp remain stable on retries of unchanged details. The server hashes the UUID into the Resend batch idempotency key. Resend retains keys for 24 hours; this endpoint rejects submissions older than 23 hours. Identical retries reuse the same batch; changed content with the same key is rejected. A synchronous client lock prevents concurrent clicks. Refreshing the page starts a new enquiry; this is not a permanent customer-deduplication system.
 

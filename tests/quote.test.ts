@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateQuote, quoteText } from "../src/lib/quote";
 import { POST } from "../src/app/api/quote/route";
-import { quoteDeliveryConfig } from "../src/lib/quote-delivery";
+import { quoteDeliveryConfig, quoteEmails } from "../src/lib/quote-delivery";
 const payload = {
   name: "Website QA",
   phone: "6045550123",
@@ -80,6 +80,26 @@ test("other service is required, single-line, bounded and ignored for standard s
 
 test("protected two-email delivery, stable replay and safe provider failures", async (t) => {
   const originals = { ...process.env };
+  delete process.env.QUOTE_TO_EMAIL;
+  assert.deepEqual(
+    quoteEmails(
+      payload,
+      "General Repairs",
+      payload.submittedAt,
+      "sender@example.com",
+    )[0].to,
+    ["celinadalir@gmail.com"],
+  );
+  process.env.QUOTE_TO_EMAIL = "configured@example.com";
+  assert.deepEqual(
+    quoteEmails(
+      payload,
+      "General Repairs",
+      payload.submittedAt,
+      "sender@example.com",
+    )[0].to,
+    ["configured@example.com"],
+  );
   const originalFetch = globalThis.fetch;
   const originalLog = console.info;
   const originalError = console.error;
@@ -90,6 +110,7 @@ test("protected two-email delivery, stable replay and safe provider failures", a
   console.error = (...args) => {
     logs.push(args);
   };
+  process.env.QUOTE_TO_EMAIL = "celinadalir@gmail.com";
   process.env.RESEND_API_KEY = "test-only-server-secret";
   process.env.QUOTE_FROM_EMAIL =
     "Saeed Contracting <quotes@notifications.saeedcontracting.ca>";
@@ -186,7 +207,7 @@ test("protected two-email delivery, stable replay and safe provider failures", a
             );
           const emails = JSON.parse(raw);
           assert.equal(emails.length, 2);
-          assert.deepEqual(emails[0].to, ["info@saeedcontracting.ca"]);
+          assert.deepEqual(emails[0].to, ["celinadalir@gmail.com"]);
           assert.equal(emails[0].reply_to, payload.email);
           assert.equal(
             emails[0].subject,
@@ -204,7 +225,7 @@ test("protected two-email delivery, stable replay and safe provider failures", a
             ),
           );
           assert.deepEqual(emails[1].to, [payload.email]);
-          assert.equal(emails[1].reply_to, "info@saeedcontracting.ca");
+          assert.equal(emails[1].reply_to, "celinadalir@gmail.com");
           assert.equal(
             emails[1].subject,
             "We received your request — Saeed Contracting",
@@ -304,6 +325,7 @@ test("protected two-email delivery, stable replay and safe provider failures", a
     console.info = originalLog;
     console.error = originalError;
     for (const key of [
+      "QUOTE_TO_EMAIL",
       "RESEND_API_KEY",
       "QUOTE_FROM_EMAIL",
       "TURNSTILE_SECRET_KEY",
