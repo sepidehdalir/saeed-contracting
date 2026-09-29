@@ -35,6 +35,10 @@ A production Next.js website for a North Vancouver contracting and property-serv
 | Contact                     | `/contact`                            |
 | Request a Quote             | `/request-a-quote`                    |
 | Privacy                     | `/privacy`                            |
+| Projects                    | `/projects`                           |
+| Six blank story templates   | `/projects/templates/[slug]`          |
+
+The sitemap contains 16 indexable pages. The six clearly labelled blank templates use `noindex, follow` and are excluded from the sitemap.
 
 A custom 404, `sitemap.xml`, `robots.txt`, SVG favicon, Apple touch icon and brand social card are also included.
 
@@ -58,7 +62,9 @@ All public service consumers use the published catalogue. Future regulated-servi
 
 - Unique titles/descriptions, absolute canonical URLs, Open Graph and Twitter metadata
 - North Vancouver as the primary area; useful content for West Vancouver, Vancouver, Burnaby, Coquitlam and Greater Vancouver without duplicate location pages
-- JSON-LD for the business, website, services, breadcrumbs and visible FAQs
+- HomeAndConstructionBusiness JSON-LD with a truthful service catalogue, plus website, service, breadcrumb and visible FAQ markup
+- Unique North Vancouver service copy and links between services, service areas, contact, quote and project planning
+- [90-day SEO plan, Search Console instructions, keyword map and before/after checklist](docs/SEO-PLAN.md)
 - Consistent name, phone and email; no invented street address, credentials, reviews or operating history
 - Crawlable internal links, semantic headings, sitemap and robots; preview noindex headers
 - Search Console verification configuration and a documented future analytics integration
@@ -99,7 +105,7 @@ npm run test:e2e
 npm run test:delivery
 ```
 
-The browser suite starts the production server automatically. It checks every public page, local links, metadata, structured-data parsing, keyboard/mobile navigation, form drafting, safe API failures, unknown routes and the unpublished-service boundary. `TEST_BASE_URL` may point to a public deployment for read-only QA; the main form test prepares drafts. The separate local direct-delivery suite intercepts all submissions and never sends email.
+The browser suite starts the production server automatically. It checks every public page, local links, metadata, structured-data parsing, keyboard/mobile navigation, form drafting, safe API failures, unknown routes and the unpublished-service boundary. `TEST_BASE_URL` may point to a public deployment for selected read-only QA; exclude the local draft-form test when checking production. The separate local direct-delivery suite intercepts all submissions and never sends email.
 
 ## Deploy and maintain
 
