@@ -28,17 +28,39 @@ The auto-renewing certificate `cert_WVWfZJoAlloY20FwrXPBhkPR` covers both names.
 
 ## Quote requests: current production state
 
-The site remains in **email-draft mode** until a verified sender and restricted Resend key are available. Visitors prepare and send an email themselves; the page never claims a draft was submitted. The direct workflow now includes both the business notification and the branded customer confirmation.
+The production form sends directly through Resend. One live test through the actual form returned HTTP 200 and showed the on-page success message. Both the business notification and branded customer confirmation received Resend **delivered** events. Email drafting remains a graceful fallback when configuration is unavailable.
 
-On 28 September 2026, a fresh attempt to create `notifications.saeedcontracting.ca` was rejected: **3 of 3 Resend domain slots are used**. No DNS records were issued, so there are no genuine Resend verification records to publish yet. No unrelated domain was deleted or reused, no paid upgrade was purchased and no iCloud records were changed.
+On 28 September 2026, the owner authorized removal of the unused, unverified `petsclub.ca` Resend entry to free a domain slot. The sending domain `notifications.saeedcontracting.ca` was created with receiving and tracking disabled. Its four exact records were added through GoDaddy; existing iCloud mail records were preserved.
 
-### Finish sender activation
+### Sending-domain DNS
 
-1. Add Resend domain capacity, or explicitly authorize removal of an unused existing domain. Create `notifications.saeedcontracting.ca` with sending enabled, receiving disabled, and tracking disabled.
-2. Retrieve that domain's actual DNS records. Add its DKIM TXT plus its Return-Path MX/SPF under the sending subdomain. Use only the exact hostnames/values returned by Resend. Never replace apex iCloud MX/SPF/DKIM, and never create a second SPF record at the same hostname.
-3. Verify the sending domain. Create a `sending_access` API key restricted to that domain, then save it only as Vercel's sensitive production `RESEND_API_KEY`. Do not put credentials in a command literal, repository, documentation or chat output.
-4. `QUOTE_FROM_EMAIL` is set in production to `Saeed Contracting <quotes@notifications.saeedcontracting.ca>`. `QUOTE_FIREWALL_ENABLED=true` is also set after the firewall was published and tested. Redeploy after adding the key. No Turnstile credential is required in this verified firewall mode.
-5. Submit **one** clearly labelled live test quote. Use a mailbox controlled by the business for the test customer address. Confirm both email IDs in Resend, their delivered events, Reply-To, fixed business recipient and Vercel runtime logs. API acceptance alone is not proof of inbox delivery. No live email was sent while configuration was blocked.
+| Type | Name | Value | TTL |
+| --- | --- | --- | --- |
+| TXT | resend._domainkey.notifications | See public DKIM value below | 1 hour |
+| MX | send.notifications | feedback-smtp.us-east-1.amazonses.com (priority 10) | 1 hour |
+| TXT | send.notifications | v=spf1 include:amazonses.com ~all | 1 hour |
+| CNAME | rsend.notifications | send.forge.rmta.net | 1 hour |
+
+Public DKIM TXT value (not a secret):
+
+```text
+p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4sQCdj8+ShNrifAkZW6ys5n59QCuMJ7l3kRUgoMi/CPzqAL6u4rwAa/xR2WUI++G1GO1CnPaC0kgOZaqyqcu1kgABmRP906OgVoiMcUNOeozMI9ZGGqo7IxEcSUWUAABx1t6JINZ6Z8blSanHZXZ9FXgp/4QWqMXm0+awS9Vu7QIDAQAB
+```
+
+The subdomain SPF is separate from the unchanged apex iCloud SPF. There is one SPF policy per hostname. No receiving MX was added at the apex.
+
+### Verified production delivery
+
+Resend has verified the domain and all four DNS records. A `sending_access` key restricted to this domain is stored only as Vercel's sensitive production `RESEND_API_KEY`. Production was redeployed with that configuration. Production already has `QUOTE_FROM_EMAIL=Saeed Contracting <quotes@notifications.saeedcontracting.ca>` and `QUOTE_FIREWALL_ENABLED=true`. No Turnstile credential is required with the verified Vercel firewall rule.
+
+The one authorized test was submitted on 28 September 2026 at 17:09 Vancouver time (29 September 00:09 UTC), using the business-controlled `info@saeedcontracting.ca` address as the test customer. Both messages were delivered to that inbox; no further test quotes were sent. The business notification had the submitted customer email as Reply-To and contained every required field, submission timestamp and canonical source.
+
+- Business message ID: `01a0ea7e-e61f-72ac-acab-e35e910743cb` — delivered.
+- Customer confirmation ID: `01a0ea7e-e621-76ca-9cf9-d612a71b8070` — delivered.
+- Vercel request ID: `vdnjt-1790640579786-c91b387e22a0` — `POST /api/quote`, HTTP 200, safe `quote_delivery_accepted` log.
+- Tested deployment: `dpl_3825biriUNDprf8KNbpLRumduro8`.
+
+Resend delivery confirms acceptance by the recipient mail server, not whether someone read the message or its inbox folder. No manual DNS or email activation step remains.
 
 ### Delivery behavior and safeguards
 
@@ -50,7 +72,7 @@ Server-side validation, an allowlist of published services, strict single-addres
 
 The **live Vercel rule** `Quote submission rate limit` (`rule_quote_submission_rate_limit_1A9HNr`) matches only `POST /api/quote`. It allows **10 requests per IP per 600 seconds**, fixed window, then returns HTTP 429. Vercel counts per region, not globally. Published configuration and an eleven-invalid-request probe verified ten HTTP 400 responses followed by HTTP 429; normal homepage access remained HTTP 200. This probe sent no emails. If this rule is disabled, first set `QUOTE_FIREWALL_ENABLED=false` and redeploy unless Turnstile is configured.
 
-Only a valid two-ID provider acceptance yields success. Failures preserve customer details with retry, call and email alternatives; provider details never appear in customer messages. Logs contain event names, opaque submission hashes, provider status codes and email IDs, never API keys or customer form contents. Monitor Resend delivery/bounce events after activation. API acceptance does not guarantee arrival in the inbox.
+Only a valid two-ID provider acceptance yields success. Failures preserve customer details with retry, call and email alternatives; provider details never appear in customer messages. Logs contain event names, opaque submission hashes, provider status codes and email IDs, never API keys or customer form contents. Monitor Resend delivery/bounce events during operation. API acceptance does not guarantee arrival in the inbox.
 
 ### Verification
 

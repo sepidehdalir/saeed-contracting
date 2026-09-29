@@ -4,7 +4,7 @@ A production Next.js website for a North Vancouver contracting and property-serv
 
 **[Production deployment](https://saeed-contracting.vercel.app)** · **[Canonical domain](https://saeedcontracting.ca)** · **[Launch & operations guide](docs/OPERATIONS.md)**
 
-> Launch status: the website is deployed on Vercel. The custom domain is configured and its Vercel HTTPS/301 behavior is verified; old DNS caches may briefly retain the parking page. Quote requests currently use a clearly labelled email-draft flow; direct Resend sending is implemented but awaits account capacity, domain verification and a restricted sending key. Vercel quote rate limiting is live and verified.
+> Launch status: live at **https://saeedcontracting.ca** with working HTTPS and a path-preserving 301 from `www`. The quote form sends directly through a verified Resend subdomain. One live test confirmed both the business notification and customer acknowledgement were delivered. Vercel rate limiting is active; iCloud incoming mail is preserved.
 
 ![Saeed Contracting desktop website](docs/home-desktop.png)
 
@@ -65,9 +65,9 @@ All public service consumers use the published catalogue. Future regulated-servi
 
 ## Quote workflow
 
-At launch the form validates customer details, prepares an email and explicitly asks the visitor to send it. The server integration never reports success when unavailable. Call/email links and copyable request details offer alternatives.
+The production form validates customer details and sends directly, showing an accessible on-page confirmation after provider acceptance. Failures preserve details and offer retry, call and email alternatives. Missing configuration falls back to clearly labelled email drafting.
 
-Direct submission sends a business notification with customer Reply-To and a branded customer confirmation in a Resend batch. Stable idempotency keys protect retries, and customer/provider details stay out of logs. Input limits, validation, origin checks, honeypot and timing checks are combined with a verified Vercel rate limit (10 attempts per IP per 10 minutes). Turnstile remains available as an additional check. Sender activation awaits Resend domain capacity and verification; see [email setup](docs/OPERATIONS.md#finish-sender-activation).
+Direct submission sends a business notification with customer Reply-To and a branded customer confirmation in a Resend batch. Stable idempotency keys protect retries, and customer/provider details stay out of logs. Input limits, validation, origin checks, honeypot and timing checks are combined with a verified Vercel rate limit (10 attempts per IP per 10 minutes). Turnstile remains available as an additional check. The sender is verified and the domain-restricted key is stored as a sensitive Vercel production variable; see [delivery verification](docs/OPERATIONS.md#verified-production-delivery).
 
 ## Accessibility and performance
 
