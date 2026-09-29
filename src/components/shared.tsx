@@ -151,6 +151,7 @@ export function Footer() {
               <Link href="/services">Our services</Link>
               <Link href="/service-areas">Where we work</Link>
               <Link href="/about">About Saeed Contracting</Link>
+              <Link href="/projects">Projects & story templates</Link>
               <Link href="/request-a-quote">Request a quote</Link>
             </div>
             <div>

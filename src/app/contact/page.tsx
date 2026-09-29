@@ -27,6 +27,17 @@ export default function Contact() {
                 visit.
               </p>
             </div>
+            <p>
+              Review our{" "}
+              <Link className="text-link" href="/services">
+                repair and maintenance services
+              </Link>{" "}
+              and{" "}
+              <Link className="text-link" href="/service-areas">
+                service areas
+              </Link>{" "}
+              before sending your project details.
+            </p>
             <div className="contact-options">
               <div className="contact-option">
                 <h2>Call</h2>

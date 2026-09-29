@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { projectTemplates } from "../src/lib/projects";
+import { site } from "../src/lib/site";
 import { services } from "../src/lib/services";
 const pages = [
   "/",
@@ -10,6 +12,8 @@ const pages = [
   "/contact",
   "/request-a-quote",
   "/privacy",
+  "/projects",
+  ...projectTemplates.map((t) => `/projects/templates/${t.slug}`),
 ];
 const titles = new Set<string>();
 const descriptions = new Set<string>();
@@ -175,7 +179,7 @@ test("sitemap, robots, 404, disabled services and delivery fallback", async ({
   const map = await request.get("/sitemap.xml");
   expect(map.status()).toBe(200);
   const xml = await map.text();
-  expect((xml.match(/<loc>/g) || []).length).toBe(15);
+  expect((xml.match(/<loc>/g) || []).length).toBe(16);
   expect(xml).not.toContain("electrical");
   const robots = await request.get("/robots.txt");
   expect(await robots.text()).toContain(
@@ -209,4 +213,79 @@ test("sitemap, robots, 404, disabled services and delivery fallback", async ({
   });
   expect(fallback.status()).toBe(503);
   expect(await fallback.text()).toContain("unavailable");
+});
+
+test("business schema, visible FAQs and template indexing stay truthful", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/contact");
+  const graph = await page
+    .locator('script[type="application/ld+json"]')
+    .allTextContents();
+  const business = graph
+    .flatMap((raw) => JSON.parse(raw)["@graph"] || [])
+    .find((node) => node["@id"] === `${site.url}/#business`);
+  expect(business["@type"]).toBe("HomeAndConstructionBusiness");
+  expect(business.telephone).toBe(site.tel);
+  expect(business.email).toBe(site.email);
+  await expect(
+    page.getByRole("link", { name: site.email }).first(),
+  ).toHaveAttribute("href", `mailto:${site.email}`);
+  expect(business.areaServed).toEqual(site.areaServed);
+  expect(business.hasOfferCatalog.itemListElement).toHaveLength(
+    services.length,
+  );
+  for (const field of [
+    "address",
+    "aggregateRating",
+    "review",
+    "openingHours",
+    "geo",
+  ])
+    expect(business).not.toHaveProperty(field);
+  for (const path of [
+    "/",
+    "/contact",
+    ...services.map((s) => `/services/${s.slug}`),
+  ]) {
+    await page.goto(path);
+    const schemas = (
+      await page.locator('script[type="application/ld+json"]').allTextContents()
+    ).map((raw) => JSON.parse(raw));
+    const faq = schemas.find((schema) => schema["@type"] === "FAQPage");
+    const details = page.locator(".faq-list details");
+    expect(faq.mainEntity).toHaveLength(await details.count());
+    for (let i = 0; i < faq.mainEntity.length; i++) {
+      await expect(details.nth(i).locator("summary")).toContainText(
+        faq.mainEntity[i].name,
+      );
+      await details.nth(i).locator("summary").click();
+      await expect(details.nth(i).locator("p")).toBeVisible();
+      await expect(details.nth(i).locator("p")).toHaveText(
+        faq.mainEntity[i].acceptedAnswer.text,
+      );
+    }
+  }
+  const map = await (await request.get("/sitemap.xml")).text();
+  expect(map).toContain(`${site.url}/projects</loc>`);
+  expect(map).not.toContain("/projects/templates/");
+  for (const template of projectTemplates) {
+    await page.goto(`/projects/templates/${template.slug}`);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "noindex, follow",
+    );
+    await expect(
+      page.getByRole("heading", { name: "Not a completed project." }),
+    ).toBeVisible();
+    await expect(page.locator(".project-template")).toContainText(
+      "TEMPLATE ONLY",
+    );
+  }
+  await page.goto("/projects");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "index, follow",
+  );
 });

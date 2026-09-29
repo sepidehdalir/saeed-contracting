@@ -1169,3 +1169,14 @@ img {
     animation: none !important;
   }
 }
+
+.project-template {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.8;
+  padding: 24px;
+  background: #e5ebee;
+  margin: 24px 0;
+}

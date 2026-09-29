@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { serviceSeo } from "@/lib/service-seo";
 import { notFound } from "next/navigation";
 import { services, getService } from "@/lib/services";
 import { metadata as makeMetadata, site } from "@/lib/site";
@@ -16,8 +17,8 @@ export async function generateMetadata({
   const s = getService((await params).slug);
   if (!s) notFound();
   return makeMetadata(
-    `${s.name} in North Vancouver`,
-    s.intro,
+    serviceSeo[s.slug].title,
+    serviceSeo[s.slug].description,
     `/services/${s.slug}`,
   );
 }
@@ -32,7 +33,7 @@ export default async function ServicePage({
     <>
       <PageIntro
         eyebrow="NORTH VANCOUVER & GREATER VANCOUVER"
-        title={s.name}
+        title={serviceSeo[s.slug].title}
         description={s.intro}
         crumbs={[
           { name: "Services", href: "/services" },
@@ -45,6 +46,12 @@ export default async function ServicePage({
             <h2>{s.heading}</h2>
             {s.body.map((p) => (
               <p key={p}>{p}</p>
+            ))}
+            {serviceSeo[s.slug].sections.map((section) => (
+              <section key={section.heading}>
+                <h2>{section.heading}</h2>
+                <p>{section.text}</p>
+              </section>
             ))}
             <h3>What we can help with</h3>
             <ul className="check-list">
@@ -60,6 +67,17 @@ export default async function ServicePage({
               <Link className="text-link" href="/service-areas">
                 View service areas <Arrow />
               </Link>
+            </p>
+            <p>
+              Have an access question before requesting a quote?{" "}
+              <Link className="text-link" href="/contact">
+                Contact Saeed Contracting
+              </Link>
+              . You can also use our{" "}
+              <Link className="text-link" href="/projects">
+                project-story templates
+              </Link>{" "}
+              to organize the details of future work.
             </p>
             <div className="related">
               <h3>Related services</h3>
@@ -106,7 +124,7 @@ export default async function ServicePage({
             <p className="eyebrow">PROJECT QUESTIONS</p>
             <h2>Worth knowing.</h2>
           </div>
-          <Faq items={s.faqs} />
+          <Faq items={[...s.faqs, ...serviceSeo[s.slug].faqs]} />
         </div>
       </section>
       <Cta />
@@ -120,7 +138,7 @@ export default async function ServicePage({
           description: s.intro,
           url: `${site.url}/services/${s.slug}`,
           provider: { "@id": `${site.url}/#business` },
-          areaServed: site.areas.map((name) => ({ "@type": "City", name })),
+          areaServed: site.areaServed,
         }}
       />
     </>

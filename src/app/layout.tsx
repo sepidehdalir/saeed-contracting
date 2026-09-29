@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope, Cormorant_Garamond } from "next/font/google";
 import { Header } from "@/components/header";
 import { Footer, JsonLd } from "@/components/shared";
+import { services } from "@/lib/services";
 import { site } from "@/lib/site";
 import "./globals.css";
 const sans = Manrope({
@@ -52,7 +53,7 @@ export default function RootLayout({
             "@context": "https://schema.org",
             "@graph": [
               {
-                "@type": "GeneralContractor",
+                "@type": "HomeAndConstructionBusiness",
                 "@id": `${site.url}/#business`,
                 name: site.name,
                 url: site.url,
@@ -60,12 +61,23 @@ export default function RootLayout({
                 email: site.email,
                 logo: `${site.url}/brand/logo-full.svg`,
                 image: `${site.url}/opengraph-image`,
-                areaServed: site.areas.map((name) => ({
-                  "@type": "City",
-                  name,
-                })),
+                areaServed: site.areaServed,
                 description:
-                  "General contracting, repairs, maintenance, installations and property services in North Vancouver and Greater Vancouver.",
+                  "Handyman help, home repairs, maintenance, assembly, mounting and property services in North Vancouver and Greater Vancouver.",
+                hasOfferCatalog: {
+                  "@type": "OfferCatalog",
+                  name: "Saeed Contracting services",
+                  itemListElement: services.map((service) => ({
+                    "@type": "Offer",
+                    itemOffered: {
+                      "@type": "Service",
+                      "@id": `${site.url}/services/${service.slug}#service`,
+                      name: service.name,
+                      url: `${site.url}/services/${service.slug}`,
+                      provider: { "@id": `${site.url}/#business` },
+                    },
+                  })),
+                },
               },
               {
                 "@type": "WebSite",

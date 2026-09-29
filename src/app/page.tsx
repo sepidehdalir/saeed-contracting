@@ -5,8 +5,8 @@ import { Cta, Faq } from "@/components/shared";
 import { ServiceGrid } from "@/components/service-grid";
 import { metadata as makeMetadata, site, homeFaqs } from "@/lib/site";
 export const metadata = makeMetadata(
-  "Saeed Contracting | North Vancouver Contractor",
-  "Saeed Contracting provides repairs, home maintenance, painting, TV mounting and property services in North Vancouver and Greater Vancouver. Request a quote.",
+  "Handyman Services in North Vancouver",
+  "Handyman help in North Vancouver for home repairs, TV mounting, furniture assembly, painting and property maintenance. Request a quote from Saeed Contracting.",
   "/",
 );
 const process = [
@@ -35,12 +35,12 @@ export default function Home() {
           <div className="hero-copy">
             <p className="eyebrow">NORTH VANCOUVER & GREATER VANCOUVER</p>
             <h1>
-              Good work.
+              Handyman help.
               <br />
-              In every <em>detail.</em>
+              Care in every <em>detail.</em>
             </h1>
             <p className="lead">
-              Professional contracting & property services.
+              Home repairs & property services in North Vancouver.
               <br />
               Repairs, maintenance and installations for the spaces you live and
               work in.
@@ -221,6 +221,20 @@ export default function Home() {
             </h2>
           </div>
           <Faq items={homeFaqs} />
+        </div>
+      </section>
+      <section className="section area-section">
+        <div className="container prose">
+          <p className="eyebrow">PROJECTS</p>
+          <h2>A clear record of the work.</h2>
+          <p>
+            Our project-story library starts with six reusable templates. They
+            show what to document about scope, materials and outcomes; they are
+            not completed projects or customer testimonials.
+          </p>
+          <Link className="text-link" href="/projects">
+            Explore project-story templates <Arrow />
+          </Link>
         </div>
       </section>
       <Cta />

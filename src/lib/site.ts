@@ -5,6 +5,16 @@ export const site = {
   phone: "604-627-0166",
   tel: "+16046270166",
   email: "info@saeedcontracting.ca",
+  areaServed: [
+    ...[
+      "North Vancouver",
+      "West Vancouver",
+      "Vancouver",
+      "Burnaby",
+      "Coquitlam",
+    ].map((name) => ({ "@type": "City", name })),
+    { "@type": "AdministrativeArea", name: "Greater Vancouver" },
+  ],
   areas: [
     "North Vancouver",
     "West Vancouver",
@@ -20,7 +30,7 @@ export function metadata(
   path: string,
 ): Metadata {
   return {
-    title,
+    title: path === "/" ? { absolute: `${title} | ${site.name}` } : title,
     description,
     alternates: { canonical: path },
     openGraph: {

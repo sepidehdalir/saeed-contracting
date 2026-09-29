@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { services } from "@/lib/services";
 import { PageIntro, Cta } from "@/components/shared";
 import { metadata as makeMetadata } from "@/lib/site";
 export const metadata = makeMetadata(
@@ -50,6 +51,36 @@ export default function Areas() {
                 <p>{copy}</p>
               </article>
             ))}
+          </div>
+          <div className="prose" style={{ marginTop: 40 }}>
+            <h2>Choose the work your North Vancouver property needs.</h2>
+            <p>
+              Start with the relevant service page for scope, preparation and
+              common questions. For a combined list, use the quote form and
+              identify every task.
+            </p>
+            <ul>
+              {services.map((service) => (
+                <li key={service.slug}>
+                  <Link
+                    className="text-link"
+                    href={`/services/${service.slug}`}
+                  >
+                    {service.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p>
+              <Link className="text-link" href="/contact">
+                Ask about access or service coverage
+              </Link>
+              , or{" "}
+              <Link className="text-link" href="/request-a-quote">
+                request a quote for your property
+              </Link>
+              .
+            </p>
           </div>
           <div className="panel" style={{ marginTop: 50 }}>
             <h2>We come to your property.</h2>
